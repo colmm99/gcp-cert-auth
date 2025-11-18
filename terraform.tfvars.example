@@ -1,0 +1,51 @@
+# terraform.tfvars.example
+# Example configuration file for GCP Certificate Authority Service
+# Copy this file to terraform.tfvars and customize the values for your environment
+
+# GCP Project Configuration
+project_id = "my-gcp-project-id"
+region     = "us-central1"
+location   = "us-central1"
+
+# CA Pool Configuration
+ca_pool_name = "production-ca-pool"
+ca_pool_tier = "DEVOPS"  # Options: DEVOPS or ENTERPRISE
+
+# Subordinate CA Configuration
+subordinate_ca_name          = "subordinate-ca-01"
+subordinate_ca_type          = "SUBORDINATE"
+subordinate_ca_lifetime      = "315360000s"  # 10 years in seconds
+subordinate_ca_key_algorithm = "RSA_PKCS1_4096_SHA256"  # Options: RSA_PKCS1_2048_SHA256, RSA_PKCS1_3072_SHA256, RSA_PKCS1_4096_SHA256, EC_P256_SHA256, EC_P384_SHA384
+
+# Certificate Subject Details
+cert_subject_common_name         = "My Subordinate CA"
+cert_subject_organization        = "Example Corporation"
+cert_subject_organizational_unit = "IT Security"
+cert_subject_locality            = "San Francisco"
+cert_subject_province            = "California"
+cert_subject_country             = "US"
+cert_subject_street_address      = "123 Example Street"
+cert_subject_postal_code         = "94102"
+
+# CA Certificate Configuration
+max_issuer_path_length  = 0     # Number of subordinate CAs that can be created under this CA
+enable_crl_distribution = true  # Enable Certificate Revocation List distribution
+
+# Resource Labels
+labels = {
+  environment = "production"
+  managed_by  = "terraform"
+  team        = "security"
+  cost_center = "it-infrastructure"
+}
+
+# IAM Configuration
+# Add users or service accounts that should have access to the CA
+# Examples:
+#   - "user:admin@example.com"
+#   - "serviceAccount:my-sa@my-project.iam.gserviceaccount.com"
+#   - "group:security-team@example.com"
+iam_members = [
+  # "user:admin@example.com",
+  # "serviceAccount:terraform@my-project.iam.gserviceaccount.com"
+]
