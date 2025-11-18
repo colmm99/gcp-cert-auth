@@ -50,7 +50,7 @@ output "subordinate_ca_csr_instructions" {
        gcloud privateca subordinates get-csr ${google_privateca_certificate_authority.subordinate_ca.certificate_authority_id} \
          --location=${var.location} \
          --pool=${var.ca_pool_name} \
-         --output-file=${var.subordinate_ca_name}-csr.pem
+         --user-output-enabled --project=${var.project_id}
     
     2. Submit this CSR to your parent/root CA for signing
     
