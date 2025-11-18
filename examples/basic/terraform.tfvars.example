@@ -1,0 +1,29 @@
+# examples/basic/terraform.tfvars.example
+# Example configuration for basic deployment
+
+# Required: Your GCP project ID
+project_id = "my-gcp-project-id"
+
+# Optional: Override defaults
+region              = "us-central1"
+location            = "us-central1"
+ca_pool_name        = "my-ca-pool"
+subordinate_ca_name = "my-subordinate-ca"
+
+# Certificate subject
+cert_subject_common_name  = "My Subordinate CA"
+cert_subject_organization = "Example Corp"
+cert_subject_country      = "US"
+
+# IAM members (optional)
+# iam_members = [
+#   "user:admin@example.com",
+#   "serviceAccount:terraform@project.iam.gserviceaccount.com"
+# ]
+
+# Labels
+labels = {
+  environment = "dev"
+  managed_by  = "terraform"
+  example     = "basic"
+}
