@@ -43,9 +43,10 @@ resource "google_privateca_ca_pool" "ca_pool" {
   labels = var.labels
 
   # Publishing options for CRL and CA certificate
+  # Note: DEVOPS tier does not support CRL publishing
   publishing_options {
     publish_ca_cert = true
-    publish_crl     = var.enable_crl_distribution
+    publish_crl     = var.ca_pool_tier == "ENTERPRISE" ? var.enable_crl_distribution : false
   }
 
   # Issuance policy for certificates issued from this pool
