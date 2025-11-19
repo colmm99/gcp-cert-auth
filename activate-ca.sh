@@ -56,11 +56,15 @@ echo ""
 echo -e "${BLUE}Step 1: Fetching CSR...${NC}"
 CSR_FILE="${CA_NAME}-csr.pem"
 
+echo "CSR_FILE=${CSR_FILE}"
+
+
+# gcloud privateca subordinates get-csr subordinate-ca-01 --location=europe-west1 --pool=production-ca-pool --project=training2021-326122
 if gcloud privateca subordinates get-csr "$CA_NAME" \
     --location="$LOCATION" \
     --pool="$CA_POOL" \
     --project="$PROJECT_ID" \
-    --output-file="$CSR_FILE" 2>/dev/null; then
+    > "$CSR_FILE"; then
     echo -e "${GREEN}✓${NC} CSR saved to: $CSR_FILE"
 else
     echo -e "${RED}✗${NC} Failed to fetch CSR"
@@ -71,19 +75,39 @@ fi
 echo ""
 echo -e "${YELLOW}⚠${NC} Now you need to sign the CSR with your parent CA"
 echo ""
-echo "If you have a parent CA, submit $CSR_FILE to it for signing."
+echo "If you have an external parent CA, submit $CSR_FILE to it for signing."
 echo ""
-echo "For testing purposes, you can create a self-signed certificate:"
+echo -e "${BLUE}Option 1: Sign with OpenSSL (for testing or external CA)${NC}"
 echo ""
-echo "  # Generate a test root CA"
+echo "  # Create OpenSSL config for subordinate CA extensions"
+echo "  cat > subordinate-ca-ext.cnf <<'EOF'"
+echo "[ v3_subordinate_ca ]"
+echo "basicConstraints = critical,CA:TRUE"
+echo "keyUsage = critical,digitalSignature,keyCertSign,cRLSign"
+echo "extendedKeyUsage = serverAuth,clientAuth"
+echo "subjectKeyIdentifier = hash"
+echo "authorityKeyIdentifier = keyid:always,issuer"
+echo "EOF"
+echo ""
+echo "  # If you need a test root CA first:"
 echo "  openssl genrsa -out root-ca.key 4096"
 echo "  openssl req -x509 -new -nodes -key root-ca.key -sha256 -days 3650 \\"
 echo "    -out root-ca.crt -subj \"/CN=Test Root CA/O=Test Org/C=US\""
 echo ""
-echo "  # Sign the CSR"
+echo "  # Sign the CSR with proper CA extensions"
 echo "  openssl x509 -req -in $CSR_FILE -CA root-ca.crt \\"
 echo "    -CAkey root-ca.key -CAcreateserial -out ${CA_NAME}-signed.pem \\"
-echo "    -days 3650 -sha256 -extensions v3_ca"
+echo "    -days 3650 -sha256 -extfile subordinate-ca-ext.cnf -extensions v3_subordinate_ca"
+echo ""
+echo -e "${BLUE}Option 2: Use another GCP Private CA as parent${NC}"
+echo ""
+echo "Note: You cannot use 'gcloud privateca certificates create' to sign a subordinate CA CSR."
+echo "Instead, you need to use a root CA pool to sign the subordinate CA."
+echo ""
+echo "If you have a root CA in GCP, you must sign it through the GCP console or use"
+echo "the REST API directly. The gcloud CLI doesn't support this operation."
+echo ""
+echo "Alternatively, export the root CA's key and use OpenSSL as shown in Option 1."
 echo ""
 
 read -p "Press Enter when you have the signed certificate file, or Ctrl+C to exit..."
@@ -105,7 +129,7 @@ if gcloud privateca subordinates activate "$CA_NAME" \
     --location="$LOCATION" \
     --pool="$CA_POOL" \
     --project="$PROJECT_ID" \
-    --pem-ca-certificate-file="$SIGNED_CERT"; then
+    --pem-chain="$SIGNED_CERT"; then
     echo ""
     echo -e "${GREEN}✓${NC} Subordinate CA activated successfully!"
 else

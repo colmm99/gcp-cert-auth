@@ -51,7 +51,7 @@ check_gcloud_project() {
 
 check_terraform_version() {
     if command -v terraform &> /dev/null; then
-        local version=$(terraform version -json 2>/dev/null | grep -o '"terraform_version":"[^"]*"' | cut -d'"' -f4)
+        local version=$(terraform version -json 2>/dev/null | grep 'terraform_version' | cut -d'"' -f4)
         if [ -n "$version" ]; then
             echo -e "${GREEN}✓${NC} Terraform version: $version"
             return 0
